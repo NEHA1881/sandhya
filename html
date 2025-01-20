@@ -1,0 +1,32 @@
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const axios = require("axios");
+require("dotenv").config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Database setup (MongoDB)
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
+
+// News route
+app.get("/api/news", async (req, res) => {
+  try {
+    const response = await axios.get(`https://newsapi.org/v2/top-headlines?country=us&apiKey=${process.env.NEWS_API_KEY}`);
+    res.json(response.data.articles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching news.");
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
